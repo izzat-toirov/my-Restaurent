@@ -16,6 +16,7 @@ import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtGuard } from '../common/guards/user.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { SelfOrRolesGuard } from '../common/guards/self.guard';
 
 @ApiBearerAuth()
 @Controller('menus')
@@ -54,12 +55,14 @@ export class MenusController {
   }
 
   @Roles('ADMIN', 'SUPER_ADMIN', 'MANAGER')
+  @UseGuards(SelfOrRolesGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateMenuDto: UpdateMenuDto) {
     return this.menusService.update(+id, updateMenuDto);
   }
 
   @Roles('ADMIN', 'SUPER_ADMIN', 'MANAGER')
+  @UseGuards(SelfOrRolesGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.menusService.remove(+id);

@@ -28,6 +28,7 @@ import { extname } from 'path';
 import { JwtGuard } from '../common/guards/user.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { SelfOrRolesGuard } from '../common/guards/self.guard';
 
 @ApiBearerAuth()
 @Controller('menu-images')
@@ -79,6 +80,7 @@ export class MenuImagesController {
   }
 
   @Roles('ADMIN', 'SUPER_ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -88,6 +90,7 @@ export class MenuImagesController {
   }
 
   @Roles('ADMIN', 'SUPER_ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.menuImagesService.remove(+id);

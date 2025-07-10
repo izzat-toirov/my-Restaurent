@@ -20,6 +20,7 @@ interface IUserCreationAttrs {
 export enum UserRole {
   USER = 'USER',
   ADMIN = 'ADMIN',
+  MANGER = 'MANAGER',
   SUPER_ADMIN = 'SUPER_ADMIN',
 }
 

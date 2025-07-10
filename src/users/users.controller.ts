@@ -8,6 +8,8 @@ import {
   Delete,
   Query,
   UseGuards,
+  ForbiddenException,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,21 +17,29 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtGuard } from '../common/guards/user.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { SelfOrAdminGuard } from '../common/guards/self.guard';
+
+import { SuperAdminCreateGuard } from '../common/guards/super_admin.guard';
+import { Request } from 'express';
+import { User } from './dto/user.decorator';
+import { SelfOrRolesGuard } from '../common/guards/self.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-  @Post('super-admin')
-  createSuperAdmin() {
-    return this.usersService.createSuperAdmin();
-  }
 
   @ApiBearerAuth()
-  
-  @Post()
+  @UseGuards(SuperAdminCreateGuard)
+  @UseGuards(JwtGuard)
+  @Post('admin')
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
+  }
+
+
+  @ApiBearerAuth()
+  @Post('customer')
+  createCustomer(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.createCustomer(createUserDto);
   }
 
   @ApiQuery({ name: 'name', required: false })
@@ -47,8 +57,8 @@ export class UsersController {
   }
 
   @ApiBearerAuth()
-  @Roles('SUPER_ADMIN', 'ADMIN', 'CUSTOMER')
-  @UseGuards(SelfOrAdminGuard)
+  @Roles('ADMIN', 'CUSTOMER')
+  @UseGuards(SelfOrRolesGuard)
   @UseGuards(JwtGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -57,7 +67,8 @@ export class UsersController {
 
   @ApiBearerAuth()
   @Roles('SUPER_ADMIN', 'ADMIN', 'CUSTOMER')
-  @UseGuards(JwtGuard, SelfOrAdminGuard)
+  @UseGuards(SelfOrRolesGuard)
+  @UseGuards(JwtGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
@@ -65,6 +76,7 @@ export class UsersController {
 
   @ApiBearerAuth()
   @Roles('SUPER_ADMIN', 'ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @UseGuards(JwtGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {

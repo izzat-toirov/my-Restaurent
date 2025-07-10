@@ -14,7 +14,8 @@ import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtGuard } from '../common/guards/user.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { SelfOrAdminGuard } from '../common/guards/self.guard';
+import { SelfOrRolesGuard } from '../common/guards/self.guard';
+
 
 @ApiBearerAuth()
 @Controller('notifications')
@@ -38,14 +39,14 @@ export class NotificationsController {
 
 
   @Roles('SUPER_ADMIN', 'ADMIN', 'CUSTOMER')
-  @UseGuards(SelfOrAdminGuard)
+  @UseGuards(SelfOrRolesGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.notificationsService.findOne(+id);
   }
 
   @Roles('SUPER_ADMIN', 'ADMIN', 'CUSTOMER')
-  @UseGuards(SelfOrAdminGuard)
+  @UseGuards(SelfOrRolesGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -55,6 +56,7 @@ export class NotificationsController {
   }
 
   @Roles('SUPER_ADMIN', 'ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.notificationsService.remove(+id);

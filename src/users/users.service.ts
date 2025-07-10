@@ -2,15 +2,113 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/sequelize';
-import { User, UserRole } from './entities/user.entity';
+
 import * as bcrypt from 'bcrypt';
 import { Restaurants } from '../restaurants/entities/restaurant.entity';
 import { Op } from 'sequelize';
+import { User, UserRole } from './entities/user.entity';
 
 
 @Injectable()
 export class UsersService {
   constructor(@InjectModel(User) private userModel: typeof User){}
+
+
+  async createSuperAdmin() {
+    const exists = await this.userModel.findOne({
+      where: { role: UserRole.SUPER_ADMIN },
+    });
+    
+  
+    if (exists) {
+      console.log('❗ Super admin allaqachon mavjud');
+      return exists;
+    }
+  
+    const superAdmin = await this.userModel.create({
+      full_name: 'Super Admin',
+      email: 'admin@gmail.com',
+      phone_number: '998901112233',
+      password: await bcrypt.hash('P@ssw0rd123', 10),
+      role: UserRole.SUPER_ADMIN,
+      is_active: true,
+    });
+  
+    console.log('✅ Super admin yaratildi');
+    return superAdmin;
+  }
+
+
+
+  async createAdmin(currentUser: any, createUserDto: CreateUserDto) {
+    const { email, phone_number, password, role } = createUserDto;
+  
+    // Faqat SUPER_ADMIN yoki ADMIN yangi ADMIN yoki MANAGER yaratishi mumkin
+    const creatorRole = currentUser.role?.toUpperCase();
+  
+    if (creatorRole !== 'SUPER_ADMIN' && creatorRole !== 'ADMIN') {
+      throw new ForbiddenException('Faqat SUPER_ADMIN yoki ADMIN foydalanuvchilar admin yaratishi mumkin');
+    }
+  
+    const newRole = role?.toUpperCase();
+    if (newRole !== 'ADMIN' && newRole !== 'MANAGER') {
+      throw new BadRequestException('Faqat ADMIN yoki MANAGER roli yaratish mumkin');
+    }
+  
+    // Email mavjudligini tekshir
+    const existingUser = await this.userModel.findOne({ where: { email } });
+    if (existingUser) {
+      throw new BadRequestException('Bu email allaqachon mavjud');
+    }
+  
+    // Telefon raqam mavjudligini tekshir
+    const existingPhone = await this.userModel.findOne({ where: { phone_number } });
+    if (existingPhone) {
+      throw new BadRequestException('Bu phone_number allaqachon mavjud');
+    }
+  
+    const hashedPassword = await bcrypt.hash(password, 10);
+  
+    const newUser = {
+      ...createUserDto,
+      role: newRole,
+      password: hashedPassword,
+    };
+  
+    return await this.userModel.create(newUser);
+  }
+  
+
+  async createCustomer(createUserDto: CreateUserDto) {
+    const { email, phone_number, password, role } = createUserDto;
+  
+
+    if (role && role.toUpperCase() !== 'CUSTOMER') {
+      throw new BadRequestException('Faqat CUSTOMER roli yaratishga ruxsat berilgan');
+    }
+  
+    const existingUser = await this.userModel.findOne({ where: { email } });
+    if (existingUser) {
+      throw new BadRequestException('Bu email allaqachon mavjud');
+    }
+  
+    const existingPhone = await this.userModel.findOne({ where: { phone_number } });
+    if (existingPhone) {
+      throw new BadRequestException('Bu phone_number allaqachon mavjud');
+    }
+  
+    const hashedPassword = await bcrypt.hash(password, 10);
+  
+    const newUser = {
+      ...createUserDto,
+      role: 'CUSTOMER',
+      password: hashedPassword,
+    };
+  
+    return await this.userModel.create(newUser);
+  }
+  
+
   async create(createUserDto: CreateUserDto) {
     const existingUser = await this.userModel.findOne({
       where: { email: createUserDto.email },
@@ -48,8 +146,7 @@ export class UsersService {
   
     return await this.userModel.create(normalizedDto);
   }
-  
-  
+ 
   
 
   async findAll(name?: string, role?: string) {
@@ -69,7 +166,6 @@ export class UsersService {
   });
 }
 
-  
 
   async findOne(id: number) {
     return await this.userModel.findByPk(id);
@@ -130,27 +226,6 @@ console.log("Update result:", uptadeUser);
     };
   }
 
-  async createSuperAdmin() {
-    const exists = await this.userModel.findOne({
-      where: { role: UserRole.SUPER_ADMIN },
-    });
-  
-    if (exists) {
-      throw new ForbiddenException('Super admin allaqachon mavjud');
-    }
-  
-    const superAdmin = await this.userModel.create({
-      full_name: 'Super Admin',
-      email: 'admin@gmail.com',
-      phone_number: '998901112233',
-      password: await bcrypt.hash('P@ssw0rd123', 10),
-      role: 'SUPER_ADMIN',
-      is_active: true,
-    });
-  
-    console.log('Super admin created');
-    return superAdmin;
-  }
 
 
   async findByRole(role: string) {

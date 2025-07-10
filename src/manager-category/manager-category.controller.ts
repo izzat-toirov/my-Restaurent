@@ -14,6 +14,7 @@ import { UpdateManagerCategoryDto } from './dto/update-manager-category.dto';
 import { JwtGuard } from '../common/guards/user.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { SelfOrRolesGuard } from '../common/guards/self.guard';
 
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
@@ -33,19 +34,22 @@ export class ManagerCategoryController {
     return this.managerCategoryService.findAll();
   }
 
-  @Roles('SUPER_ADMIN')
+  @Roles('SUPER_ADMIN', 'ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.managerCategoryService.findOne(+id);
   }
 
-  @Roles('SUPER_ADMIN')
+  @Roles('SUPER_ADMIN', 'ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateManagerCategoryDto: UpdateManagerCategoryDto) {
     return this.managerCategoryService.update(+id, updateManagerCategoryDto);
   }
 
-  @Roles('SUPER_ADMIN')
+  @Roles('SUPER_ADMIN', 'ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.managerCategoryService.remove(+id);

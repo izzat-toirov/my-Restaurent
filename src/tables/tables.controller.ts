@@ -17,6 +17,7 @@ import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from '../common/guards/user.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
+import { SelfOrRolesGuard } from '../common/guards/self.guard';
 
 @ApiTags('Tables')
 @ApiBearerAuth()
@@ -54,12 +55,14 @@ export class TablesController {
   }
 
   @Roles('SUPER_ADMIN', 'ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateTableDto: UpdateTableDto) {
     return this.tablesService.update(+id, updateTableDto);
   }
 
   @Roles('SUPER_ADMIN', 'ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.tablesService.remove(+id);

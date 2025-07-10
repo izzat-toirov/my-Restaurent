@@ -32,6 +32,7 @@ import { Reservation } from './reservations/entities/reservation.entity';
 
 @Module({
   imports: [
+    UsersModule,
     ConfigModule.forRoot({
       envFilePath:".env",
       isGlobal:true

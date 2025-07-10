@@ -16,6 +16,7 @@ import { JwtGuard } from '../common/guards/user.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { SelfOrRolesGuard } from '../common/guards/self.guard';
 
 @ApiBearerAuth()
 @Controller('menu-category')
@@ -40,6 +41,7 @@ export class MenuCategoryController {
   }
 
   @Roles('SUPER_ADMIN','ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -49,6 +51,7 @@ export class MenuCategoryController {
   }
 
   @Roles('SUPER_ADMIN','ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.menuCategoryService.remove(+id);

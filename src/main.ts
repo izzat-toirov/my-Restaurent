@@ -5,12 +5,14 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { UsersService } from './users/users.service';
 
 
 async function start() {
   try {
     const PORT = process.env.PORT ?? 3030;
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
     app.use(cookieParser());
     app.useGlobalPipes(new ValidationPipe());
     app.setGlobalPrefix('api');
@@ -34,6 +36,8 @@ async function start() {
       console.log(`✅ Server started at: http://localhost:${PORT}`);
       console.log(`📂 Static files available at: http://localhost:${PORT}/uploads`);
     });
+    const userService = app.get(UsersService);
+    await userService.createSuperAdmin();
   } catch (error) {
     console.log(error);
   }

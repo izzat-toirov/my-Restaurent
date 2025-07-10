@@ -14,6 +14,7 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 import { JwtGuard } from '../common/guards/user.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { SelfOrRolesGuard } from '../common/guards/self.guard';
 
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
@@ -34,18 +35,21 @@ export class ReviewsController {
   }
 
   @Roles('ADMIN', 'SUPER_ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.reviewsService.findOne(+id);
   }
 
   @Roles('ADMIN', 'SUPER_ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateReviewDto: UpdateReviewDto) {
     return this.reviewsService.update(+id, updateReviewDto);
   }
 
   @Roles('ADMIN', 'SUPER_ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.reviewsService.remove(+id);

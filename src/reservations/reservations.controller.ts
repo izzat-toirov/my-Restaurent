@@ -15,6 +15,7 @@ import { UpdateReservationDto } from './dto/update-reservation.dto';
 import { JwtGuard } from '../common/guards/user.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { SelfOrRolesGuard } from '../common/guards/self.guard';
 
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
@@ -61,6 +62,7 @@ export class ReservationsController {
   }
 
   @Roles('CUSTOMER', 'ADMIN', 'SUPER_ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.reservationsService.findOne(+id);
@@ -74,6 +76,7 @@ export class ReservationsController {
   // }
 
   @Roles('ADMIN', 'SUPER_ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.reservationsService.remove(+id);

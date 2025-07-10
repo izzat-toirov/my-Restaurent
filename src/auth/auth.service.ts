@@ -20,6 +20,7 @@ export class AuthService {
     async generateToken(user: User){
         const payload = {
             id: user.id,
+            role: user.role,
             is_active: user.is_active,
         };
 

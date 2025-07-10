@@ -15,6 +15,7 @@ import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { JwtGuard } from '../common/guards/user.guard';
 import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { Roles } from '../common/decorators/roles.decorator';
+import { SelfOrRolesGuard } from '../common/guards/self.guard';
 
 
 // ✅ Har bir endpointga mos guard va role qo‘shilgan
@@ -24,13 +25,13 @@ import { Roles } from '../common/decorators/roles.decorator';
 export class RestaurantsController {
   constructor(private readonly restaurantsService: RestaurantsService) {}
 
-  @Roles('SUPER_ADMIN', 'ADMIN')
+  @Roles('CUSTOMER')
   @Post()
   create(@Body() createRestaurantDto: CreateRestaurantDto) {
     return this.restaurantsService.create(createRestaurantDto);
   }
 
-  @Roles('SUPER_ADMIN','ADMIN', 'MANAGER', 'CUSTOMER')
+  @Roles('SUPER_ADMIN','ADMIN', 'MANAGER')
   @ApiQuery({ name: 'name', required: false, description: 'Restoran nomi bo‘yicha qidiruv' })
   @ApiQuery({ name: 'address', required: false, description: 'Manzil bo‘yicha qidiruv' })
   @Get()
@@ -39,18 +40,21 @@ export class RestaurantsController {
   }
 
   @Roles('SUPER_ADMIN','ADMIN', 'MANAGER', 'CUSTOMER')
+    @UseGuards(SelfOrRolesGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.restaurantsService.findOne(+id);
   }
 
   @Roles('SUPER_ADMIN','ADMIN', 'MANAGER')
+  @UseGuards(SelfOrRolesGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateRestaurantDto: UpdateRestaurantDto) {
     return this.restaurantsService.update(+id, updateRestaurantDto);
   }
 
   @Roles('SUPER_ADMIN','ADMIN')
+    @UseGuards(SelfOrRolesGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.restaurantsService.remove(+id);
